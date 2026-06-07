@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MITRA — Your Research Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       DESIGN SYSTEM
+    ═══════════════════════════════════════════════════════════ */
+    :root {
+      --ink:       #0a0a0f;
+      --ink-80:    #1a1a24;
+      --ink-60:    #2e2e40;
+      --muted:     #6b6b85;
+      --border:    #e8e8f0;
+      --bg:        #f7f7fc;
+      --surface:   #ffffff;
+      --accent:    #5b5bd6;
+      --accent-2:  #8b5cf6;
+      --accent-3:  #06b6d4;
+      --success:   #10b981;
+      --warn:      #f59e0b;
+      --danger:    #ef4444;
+      --gradient:  linear-gradient(135deg, #5b5bd6 0%, #8b5cf6 50%, #06b6d4 100%);
+      --glow:      0 0 40px rgba(91,91,214,0.15);
+      --shadow-sm: 0 1px 3px rgba(10,10,15,0.08), 0 1px 2px rgba(10,10,15,0.06);
+      --shadow-md: 0 4px 16px rgba(10,10,15,0.1), 0 2px 6px rgba(10,10,15,0.08);
+      --shadow-lg: 0 20px 60px rgba(10,10,15,0.15);
+      --r-sm: 8px;
+      --r-md: 14px;
+      --r-lg: 20px;
+      --r-xl: 28px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       NOISE TEXTURE OVERLAY
+    ═══════════════════════════════════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════════════════════════ */
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 60px 1fr;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TOP NAV
+    ═══════════════════════════════════════════════════════════ */
+    .topnav {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--gradient);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 800;
+      box-shadow: var(--glow);
+    }
+
+    .logo-sub {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 4px 10px;
+      background: var(--bg);
+      border-radius: 100px;
+      border: 1px solid var(--border);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    .status-dot.error { background: var(--danger); animation: none; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════════════ */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 20px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .btn-new-space {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--gradient);
+      color: white;
+      border: none;
+      border-radius: var(--r-md);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      box-shadow: 0 4px 14px rgba(91,91,214,0.3);
+    }
+
+    .btn-new-space:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-new-space:active { transform: translateY(0); }
+
+    .spaces-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 8px;
+    }
+
+    .spaces-list::-webkit-scrollbar { width: 4px; }
+    .spaces-list::-webkit-scrollbar-track { background: transparent; }
+    .spaces-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    .space-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      margin-bottom: 2px;
+    }
+
+    .space-item:hover { background: var(--bg); }
+    .space-item.active { background: rgba(91,91,214,0.08); }
+    .space-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: var(--gradient);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .space-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .space-item.active .space-icon {
+      background: rgba(91,91,214,0.1);
+      border-color: rgba(91,91,214,0.2);
+    }
+
+    .space-info { flex: 1; min-width: 0; }
+    .space-name {
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .space-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .space-delete {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.15s;
+      font-size: 0.75rem;
+    }
+
+    .space-item:hover .space-delete { opacity: 1; }
+    .space-delete:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+    .empty-spaces {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .backend-url-input {
+      width: 100%;
+      padding: 7px 10px;
+      font-size: 0.72rem;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--ink-60);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .backend-url-input:focus { border-color: var(--accent); }
+    .backend-url-label { font-size: 0.65rem; color: var(--muted); margin-bottom: 4px; display: block; }
+
+    /* ═══════════════════════════════════════════════════════════
+       MAIN AREA
+    ═══════════════════════════════════════════════════════════ */
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ── WELCOME SCREEN ── */
+    .welcome {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(91,91,214,0.08);
+      border: 1px solid rgba(91,91,214,0.2);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .welcome-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: center;
+      max-width: 440px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      max-width: 640px;
+      width: 100%;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 18px 16px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .feature-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .feature-desc {
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── SPACE WORKSPACE ── */
+    .workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      overflow: hidden;
+      animation: fadeUp 0.35s ease both;
+    }
+
+    /* Chat panel */
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    .chat-toolbar {
+      padding: 14px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toolbar-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex: 1;
+    }
+
+    .mode-pills {
+      display: flex;
+      gap: 4px;
+    }
+
+    .mode-pill {
+      padding: 5px 10px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .mode-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    .msg {
+      display: flex;
+      gap: 10px;
+      animation: msgIn 0.25s ease both;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    .msg.user .msg-avatar {
+      background: var(--gradient);
+      color: white;
+    }
+
+    .msg.ai .msg-avatar {
+      background: rgba(91,91,214,0.1);
+      color: var(--accent);
+    }
+
+    .msg-bubble {
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .msg.user .msg-bubble {
+      background: var(--gradient);
+      color: white;
+      border-radius: 14px 4px 14px 14px;
+    }
+
+    .msg.ai .msg-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      border-radius: 4px 14px 14px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .msg-bubble pre {
+      white-space: pre-wrap;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+    }
+
+    .msg-meta {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .msg.ai .msg-meta { text-align: left; }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: var(--muted);
+      border-radius: 50%;
+      animation: bounce 1.2s ease infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+
+    .chat-input-area {
+      padding: 16px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 10px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .chat-input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(91,91,214,0.1);
+    }
+
+    .chat-textarea {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--ink);
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      line-height: 1.5;
+    }
+
+    .chat-textarea::placeholder { color: var(--muted); }
+
+    .btn-send {
+      width: 36px;
+      height: 36px;
+      background: var(--gradient);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, transform 0.2s;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(91,91,214,0.3);
+    }
+
+    .btn-send:hover:not(:disabled) { opacity: 0.85; transform: scale(1.05); }
+    .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .quick-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-btn {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: var(--surface);
+      font-size: 0.7rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .quick-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(91,91,214,0.05); }
+
+    /* Right panel */
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .panel-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-tab {
+      flex: 1;
+      padding: 13px 8px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .panel-content::-webkit-scrollbar { width: 4px; }
+    .panel-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* Docs tab */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--r-md);
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(91,91,214,0.03); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+    .upload-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+    .upload-label { font-size: 0.8rem; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+    .upload-hint { font-size: 0.7rem; color: var(--muted); }
+
+    .doc-card {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      margin-bottom: 8px;
+      transition: box-shadow 0.15s;
+    }
+
+    .doc-card:hover { box-shadow: var(--shadow-sm); }
+
+    .doc-type {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: rgba(91,91,214,0.08);
+      flex-shrink: 0;
+    }
+
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name { font-size: 0.78rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-meta { font-size: 0.67rem; color: var(--muted); margin-top: 2px; }
+
+    .doc-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      transition: all 0.15s;
+      opacity: 0;
+    }
+
+    .doc-card:hover .doc-del { opacity: 1; }
+    .doc-del:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+    .upload-progress {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .upload-progress.show { display: block; }
+
+    .upload-progress-bar {
+      height: 100%;
+      background: var(--gradient);
+      border-radius: 10px;
+      animation: progress-anim 1.5s ease infinite;
+    }
+
+    @keyframes progress-anim {
+      0%   { width: 0%; }
+      50%  { width: 70%; }
+      100% { width: 100%; }
+    }
+
+    /* Insights tab */
+    .insight-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .insight-icon { font-size: 1rem; }
+    .insight-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; }
+
+    .btn-generate {
+      width: 100%;
+      padding: 10px;
+      border: 1.5px solid var(--accent);
+      border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--accent);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-generate:hover { background: var(--accent); color: white; }
+
+    .insight-output {
+      font-size: 0.78rem;
+      color: var(--ink-60);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 12px;
+      margin-top: 8px;
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .insight-output.show { display: block; animation: fadeUp 0.3s ease; }
+
+    /* Mindmap tab */
+    .mindmap-container {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 16px;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      font-family: 'DM Sans', monospace;
+      color: var(--ink-60);
+      white-space: pre-wrap;
+      min-height: 200px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,15,0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-lg);
+      animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(30px) scale(0.95); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .modal-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--bg);
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(91,91,214,0.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn { padding: 10px 20px; border-radius: var(--r-sm); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-primary { background: var(--gradient); color: white; flex: 1; box-shadow: 0 4px 14px rgba(91,91,214,0.3); }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--muted); color: var(--ink); }
+
+    /* ═══════════════════════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: var(--r-md);
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 320px;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.success { background: var(--success); color: white; }
+    .toast.error   { background: var(--danger); color: white; }
+    .toast.info    { background: var(--accent); color: white; }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCROLLBAR GLOBAL
+    ═══════════════════════════════════════════════════════════ */
+    * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 240px 1fr; }
+      .workspace { grid-template-columns: 1fr; }
+      .right-panel { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <a class="logo" href="#">
+      <div class="logo-mark">M</div>
+      <div>
+        <div>MITRA</div>
+        <div class="logo-sub">Research Intelligence</div>
+      </div>
+    </a>
+    <div class="nav-right">
+      <div class="api-status" id="apiStatus">
+        <div class="status-dot error" id="statusDot"></div>
+        <span id="statusText">Connecting…</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-label">Spaces</div>
+      <button class="btn-new-space" onclick="openNewSpaceModal()">
+        <span>＋</span> New Space
+      </button>
+    </div>
+    <div class="spaces-list" id="spacesList">
+      <div class="empty-spaces">
+        No spaces yet.<br/>Create one to start researching.
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <label class="backend-url-label">Backend URL</label>
+      <input class="backend-url-input" id="backendUrl"
+        placeholder="https://your-app.onrender.com"
+        value="http://localhost:8000"
+        onchange="setBackend(this.value)" />
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="mainArea">
+    <!-- WELCOME -->
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-badge">✦ AI-Powered Research Intelligence</div>
+      <h1 class="welcome-title">Think deeper.<br/>Learn faster.</h1>
+      <p class="welcome-sub">Upload your documents, research papers, or notes — then chat, summarise, quiz yourself, and generate mind maps. All in one place.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">💬</span>
+          <div class="feature-name">Contextual Chat</div>
+          <div class="feature-desc">Ask anything across all your documents</div>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🗺️</span>
+          <div class="feature-name">Mind Maps</div>
+          <div class="feature-desc">Auto-generate visual knowledge maps</div>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🧠</span>
+          <div class="feature-name">Smart Quiz</div>
+          <div class="feature-desc">Test your understanding instantly</div>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📋</span>
+          <div class="feature-name">Summaries</div>
+          <div class="feature-desc">Get structured briefings in seconds</div>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔍</span>
+          <div class="feature-name">Semantic Search</div>
+          <div class="feature-desc">Find ideas, not just keywords</div>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📁</span>
+          <div class="feature-name">Multi-Doc Spaces</div>
+          <div class="feature-desc">Organise projects in separate spaces</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKSPACE (hidden until space selected) -->
+    <div class="workspace" id="workspace" style="display:none;">
+      <!-- Chat panel -->
+      <div class="chat-panel">
+        <div class="chat-toolbar">
+          <div class="toolbar-title" id="workspaceTitle">Space</div>
+          <div class="mode-pills">
+            <div class="mode-pill active" onclick="setMode('chat', this)">💬 Chat</div>
+            <div class="mode-pill" onclick="setMode('explain', this)">💡 Explain</div>
+            <div class="mode-pill" onclick="setMode('quiz', this)">❓ Quiz</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg ai">
+            <div class="msg-avatar">M</div>
+            <div>
+              <div class="msg-bubble">Hello! Upload some documents and I'll help you understand them deeply. You can ask questions, request summaries, or generate a quiz.</div>
+              <div class="msg-meta">MITRA · just now</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-input-wrap">
+            <textarea class="chat-textarea" id="chatInput" placeholder="Ask anything about your documents…" rows="1"
+              onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="btn-send" id="sendBtn" onclick="sendMessage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="quick-actions">
+            <button class="quick-btn" onclick="quickAsk('Summarise all documents')">📋 Summarise</button>
+            <button class="quick-btn" onclick="quickAsk('What are the key insights?')">✨ Key insights</button>
+            <button class="quick-btn" onclick="quickAsk('What questions should I ask?')">❓ Suggest questions</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="right-panel">
+        <div class="panel-tabs">
+          <div class="panel-tab active" onclick="switchTab('docs', this)">📄 Documents</div>
+          <div class="panel-tab" onclick="switchTab('insights', this)">✨ Insights</div>
+          <div class="panel-tab" onclick="switchTab('mindmap', this)">🗺️ Mind Map</div>
+        </div>
+
+        <!-- Documents tab -->
+        <div class="panel-content" id="tab-docs">
+          <div class="upload-zone" id="uploadZone" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+            <input type="file" id="fileInput" multiple accept=".pdf,.txt,.docx,.doc" onchange="uploadFiles(this.files)" />
+            <span class="upload-icon">📂</span>
+            <div class="upload-label">Drop files or click to upload</div>
+            <div class="upload-hint">PDF, TXT, DOCX supported</div>
+            <div class="upload-progress" id="uploadProgress">
+              <div class="upload-progress-bar"></div>
+            </div>
+          </div>
+          <div id="docsList"></div>
+        </div>
+
+        <!-- Insights tab -->
+        <div class="panel-content" id="tab-insights" style="display:none;">
+          <div class="insight-card">
+            <div class="insight-header">
+              <span class="insight-icon">📋</span>
+              <div class="insight-title">Document Summary</div>
+            </div>
+            <button class="btn-generate" onclick="generateInsight('summary', 'summaryOutput')">
+              ✦ Generate Summary
+            </button>
+            <div class="insight-output" id="summaryOutput"></div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-header">
+              <span class="insight-icon">❓</span>
+              <div class="insight-title">Quiz Generator</div>
+            </div>
+            <button class="btn-generate" onclick="generateInsight('quiz', 'quizOutput')">
+              ✦ Generate Quiz
+            </button>
+            <div class="insight-output" id="quizOutput"></div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-header">
+              <span class="insight-icon">💡</span>
+              <div class="insight-title">Key Concepts</div>
+            </div>
+            <button class="btn-generate" onclick="generateInsight('explain', 'explainOutput')">
+              ✦ Extract Concepts
+            </button>
+            <div class="insight-output" id="explainOutput"></div>
+          </div>
+        </div>
+
+        <!-- Mind map tab -->
+        <div class="panel-content" id="tab-mindmap" style="display:none;">
+          <button class="btn-generate" onclick="generateMindmap()" style="margin-bottom:12px;">
+            ✦ Generate Mind Map
+          </button>
+          <div class="mindmap-container" id="mindmapContainer">
+            Mind map will appear here after you generate it.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New Space Modal -->
+<div class="modal-overlay" id="newSpaceModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Create a new Space</div>
+    <div class="modal-sub">A space is a container for related documents and research.</div>
+    <label class="form-label">Space Name</label>
+    <input class="form-input" id="newSpaceName" placeholder="e.g. Q3 Research, Thesis Notes, ArthAI Docs"
+      onkeydown="if(event.key==='Enter') createSpace()" />
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createSpace()">Create Space</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let BACKEND = localStorage.getItem('mitra_backend') || 'http://localhost:8000';
+let currentSpaceId = null;
+let chatHistory = [];
+let currentMode = 'chat';
+let spaces = {};
+
+document.getElementById('backendUrl').value = BACKEND;
+
+// ═══════════════════════════════════════════════════════════
+// BACKEND
+// ═══════════════════════════════════════════════════════════
+function setBackend(url) {
+  BACKEND = url.replace(/\/$/, '');
+  localStorage.setItem('mitra_backend', BACKEND);
+  checkHealth();
+}
+
+async function api(method, path, body = null, isForm = false) {
+  const opts = { method, headers: {} };
+  if (body && !isForm) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  } else if (body && isForm) {
+    opts.body = body;
+  }
+  const res = await fetch(BACKEND + path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new Error(err.detail || 'Request failed');
+  }
+  return res.json();
+}
+
+async function checkHealth() {
+  try {
+    await api('GET', '/health');
+    setStatus(true);
+    loadSpaces();
+  } catch {
+    setStatus(false);
+  }
+}
+
+function setStatus(ok) {
+  document.getElementById('statusDot').className = 'status-dot' + (ok ? '' : ' error');
+  document.getElementById('statusText').textContent = ok ? 'Connected' : 'Offline';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SPACES
+// ═══════════════════════════════════════════════════════════
+async function loadSpaces() {
+  try {
+    const data = await api('GET', '/spaces');
+    spaces = {};
+    data.spaces.forEach(s => spaces[s.id] = s);
+    renderSpaces();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function renderSpaces() {
+  const list = document.getElementById('spacesList');
+  const keys = Object.keys(spaces);
+  if (!keys.length) {
+    list.innerHTML = '<div class="empty-spaces">No spaces yet.<br/>Create one to start researching.</div>';
+    return;
+  }
+  list.innerHTML = keys.map(id => {
+    const s = spaces[id];
+    const active = id === currentSpaceId ? ' active' : '';
+    const docCount = (s.docs || []).length;
+    return `
+      <div class="space-item${active}" onclick="openSpace('${id}')">
+        <div class="space-icon">📁</div>
+        <div class="space-info">
+          <div class="space-name">${esc(s.name)}</div>
+          <div class="space-meta">${docCount} doc${docCount !== 1 ? 's' : ''}</div>
+        </div>
+        <button class="space-delete" onclick="deleteSpace(event,'${id}')">✕</button>
+      </div>`;
+  }).join('');
+}
+
+function openNewSpaceModal() {
+  document.getElementById('newSpaceModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('newSpaceName').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('newSpaceModal').style.display = 'none';
+  document.getElementById('newSpaceName').value = '';
+}
+
+async function createSpace() {
+  const name = document.getElementById('newSpaceName').value.trim();
+  if (!name) { toast('Enter a space name', 'error'); return; }
+  try {
+    const form = new FormData();
+    form.append('name', name);
+    const data = await api('POST', '/spaces/create', form, true);
+    closeModal();
+    await loadSpaces();
+    openSpace(data.space_id);
+    toast(`Space "${name}" created!`, 'success');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function openSpace(id) {
+  currentSpaceId = id;
+  chatHistory = [];
+  currentMode = 'chat';
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('workspace').style.display = 'grid';
+  document.getElementById('workspaceTitle').textContent = spaces[id]?.name || 'Space';
+  renderSpaces();
+
+  // Reset chat
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="msg ai">
+      <div class="msg-avatar">M</div>
+      <div>
+        <div class="msg-bubble">I'm ready to help you explore <strong>${esc(spaces[id]?.name || 'this space')}</strong>. Upload documents and ask me anything about them!</div>
+        <div class="msg-meta">MITRA · just now</div>
+      </div>
+    </div>`;
+
+  renderDocs();
+  switchTab('docs', document.querySelector('.panel-tab'));
+}
+
+async function deleteSpace(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this space and all its documents?')) return;
+  try {
+    await api('DELETE', `/spaces/${id}`);
+    if (currentSpaceId === id) {
+      currentSpaceId = null;
+      document.getElementById('workspace').style.display = 'none';
+      document.getElementById('welcomeScreen').style.display = 'flex';
+    }
+    await loadSpaces();
+    toast('Space deleted', 'info');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DOCUMENTS
+// ═══════════════════════════════════════════════════════════
+function renderDocs() {
+  const space = spaces[currentSpaceId];
+  const docs = space?.docs || [];
+  const container = document.getElementById('docsList');
+  if (!docs.length) {
+    container.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:8px 0;">No documents yet</div>';
+    return;
+  }
+  container.innerHTML = docs.map(d => {
+    const ext = d.filename.split('.').pop().toUpperCase();
+    const icons = { PDF: '📕', DOCX: '📘', DOC: '📘', TXT: '📄' };
+    const icon = icons[ext] || '📄';
+    const size = d.size > 1024*1024 ? (d.size/1024/1024).toFixed(1)+'MB' : Math.round(d.size/1024)+'KB';
+    return `
+      <div class="doc-card">
+        <div class="doc-type">${icon}</div>
+        <div class="doc-info">
+          <div class="doc-name">${esc(d.filename)}</div>
+          <div class="doc-meta">${size} · ${d.chunks} chunks</div>
+        </div>
+        <button class="doc-del" onclick="deleteDoc('${d.id}')">✕</button>
+      </div>`;
+  }).join('');
+}
+
+async function uploadFiles(files) {
+  if (!currentSpaceId) { toast('Select a space first', 'error'); return; }
+  const progress = document.getElementById('uploadProgress');
+  progress.classList.add('show');
+  let uploaded = 0;
+  for (const file of files) {
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      await api('POST', `/spaces/${currentSpaceId}/upload`, form, true);
+      uploaded++;
+    } catch (e) {
+      toast(`Failed: ${file.name} — ${e.message}`, 'error');
+    }
+  }
+  progress.classList.remove('show');
+  if (uploaded) {
+    await loadSpaces();
+    renderDocs();
+    toast(`${uploaded} file${uploaded>1?'s':''} uploaded!`, 'success');
+  }
+}
+
+async function deleteDoc(docId) {
+  if (!confirm('Remove this document?')) return;
+  try {
+    await api('DELETE', `/spaces/${currentSpaceId}/docs/${docId}`);
+    await loadSpaces();
+    renderDocs();
+    toast('Document removed', 'info');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  uploadFiles(e.dataTransfer.files);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════════════════════
+function setMode(mode, el) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function quickAsk(q) {
+  document.getElementById('chatInput').value = q;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !currentSpaceId) return;
+  input.value = '';
+  autoResize(input);
+
+  appendMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+
+  // Typing indicator
+  const typingId = appendTyping();
+
+  try {
+    const data = await api('POST', `/spaces/${currentSpaceId}/chat`, {
+      message: text,
+      history: chatHistory.slice(-10),
+      mode: currentMode
+    });
+    removeTyping(typingId);
+    appendMsg('ai', data.answer);
+    chatHistory.push({ role: 'assistant', content: data.answer });
+  } catch (e) {
+    removeTyping(typingId);
+    appendMsg('ai', `⚠️ ${e.message}`);
+  }
+
+  sendBtn.disabled = false;
+}
+
+function appendMsg(role, text) {
+  const msgs = document.getElementById('chatMessages');
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar">${isUser ? 'R' : 'M'}</div>
+    <div>
+      <div class="msg-bubble"><pre>${esc(text)}</pre></div>
+      <div class="msg-meta">${isUser ? 'You' : 'MITRA'} · ${now}</div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const id = 'typing_' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = id;
+  div.innerHTML = `
+    <div class="msg-avatar">M</div>
+    <div>
+      <div class="msg-bubble">
+        <div class="typing-indicator"><span></span><span></span><span></span></div>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ═══════════════════════════════════════════════════════════
+// INSIGHTS
+// ═══════════════════════════════════════════════════════════
+async function generateInsight(mode, outputId) {
+  if (!currentSpaceId) { toast('Open a space first', 'error'); return; }
+  const output = document.getElementById(outputId);
+  output.textContent = 'Generating…';
+  output.classList.add('show');
+  try {
+    const data = await api('POST', `/spaces/${currentSpaceId}/chat`, {
+      message: `Generate a ${mode} of these documents.`,
+      history: [],
+      mode
+    });
+    output.textContent = data.answer;
+  } catch (e) {
+    output.textContent = '⚠️ ' + e.message;
+  }
+}
+
+async function generateMindmap() {
+  if (!currentSpaceId) { toast('Open a space first', 'error'); return; }
+  const container = document.getElementById('mindmapContainer');
+  container.textContent = 'Generating mind map…';
+  try {
+    const data = await api('POST', `/spaces/${currentSpaceId}/mindmap`);
+    container.textContent = data.answer;
+  } catch (e) {
+    container.textContent = '⚠️ ' + e.message;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(tabId, el) {
+  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  ['docs','insights','mindmap'].forEach(id => {
+    document.getElementById('tab-' + id).style.display = id === tabId ? 'block' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  const div = document.createElement('div');
+  div.className = `toast ${type}`;
+  div.innerHTML = `<span>${icons[type]}</span> ${esc(msg)}`;
+  c.appendChild(div);
+  setTimeout(() => div.remove(), 3500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTIL
+// ═══════════════════════════════════════════════════════════
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+checkHealth();
+setInterval(checkHealth, 30000);
+</script>
+</body>
+</html>
